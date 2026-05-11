@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+{% block content %}
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark glass-navbar sticky-top">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold" href="#"><i class="fa-solid fa-layer-group text-primary-gradient me-2"></i>SmartTask</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto align-items-center">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle text-white fw-medium" href="#" role="button" data-bs-toggle="dropdown">
+                        <img src="https://ui-avatars.com/api/?name={{ user.name }}&background=6c5ce7&color=fff" class="rounded-circle me-2" width="32" height="32" alt="Avatar">
+                        {{ user.name }}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end glass-dropdown">
+                        <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}"><i class="fa-solid fa-right-from-bracket me-2"></i>Logout</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-2 d-none d-lg-block">
+            <div class="glass-sidebar p-3 h-100 rounded-4">
+                <ul class="nav flex-column sidebar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#"><i class="fa-solid fa-chart-pie me-2"></i> Dashboard</a>
+                    </li>
+                    <li class="nav-item mt-2">
+                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#taskModal" onclick="prepareAddModal()"><i class="fa-solid fa-plus me-2"></i> Add Task</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-lg-10">
+            <!-- Analytics Cards -->
+            <div class="row mb-4" id="analytics-cards">
+                <div class="col-md-3 mb-3">
+                    <div class="card glass-card h-100 border-left-primary">
+                        <div class="card-body">
+                            <h6 class="text-muted-light text-uppercase fw-bold mb-2">Total Tasks</h6>
+                            <h2 class="mb-0 fw-bold text-white" id="stat-total">0</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card glass-card h-100 border-left-success">
+                        <div class="card-body">
+                            <h6 class="text-muted-light text-uppercase fw-bold mb-2">Completed</h6>
+                            <h2 class="mb-0 fw-bold text-white" id="stat-completed">0</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card glass-card h-100 border-left-warning">
+                        <div class="card-body">
+                            <h6 class="text-muted-light text-uppercase fw-bold mb-2">Pending</h6>
+                            <h2 class="mb-0 fw-bold text-white" id="stat-pending">0</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card glass-card h-100 border-left-info">
+                        <div class="card-body">
+                            <h6 class="text-muted-light text-uppercase fw-bold mb-2">Completion %</h6>
+                            <h2 class="mb-0 fw-bold text-white" id="stat-percent">0%</h2>
+                            <div class="progress mt-2 custom-progress" style="height: 6px;">
+                                <div class="progress-bar bg-info" id="stat-progress-bar" role="progressbar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Toolbar (Search & Filter) -->
+            <div class="row mb-3 align-items-center">
+                <div class="col-md-6">
+                    <h4 class="text-white fw-bold mb-0">My Tasks</h4>
+                </div>
+                <div class="col-md-6 d-flex gap-2 justify-content-md-end mt-3 mt-md-0">
+                    <input type="text" id="searchInput" class="form-control custom-input w-auto" placeholder="Search tasks...">
+                    <select id="statusFilter" class="form-select custom-input w-auto">
+                        <option value="All">All Statuses</option>
+                        <option value="Pending">Pending</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Completed">Completed</option>
+                    </select>
+                    <button class="btn btn-primary btn-gradient shadow-sm" data-bs-toggle="modal" data-bs-target="#taskModal" onclick="prepareAddModal()">
+                        <i class="fa-solid fa-plus"></i> New
+                    </button>
+                </div>
+            </div>
+
+            <!-- Task Table -->
+            <div class="card glass-card">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table text-white custom-table mb-0 align-middle">
+                            <thead class="glass-thead">
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Description</th>
+                                    <th>Priority</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="taskTableBody">
+                                <!-- Tasks will be rendered here by JS -->
+                            </tbody>
+                        </table>
+                        <div id="noTasksMsg" class="text-center py-5 text-muted-light d-none">
+                            <i class="fa-solid fa-clipboard-list fa-3x mb-3"></i>
+                            <h5>No tasks found</h5>
+                        </div>
+                        <div id="loadingTasksMsg" class="text-center py-5 text-muted-light">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Task Modal -->
+<div class="modal fade glass-modal" id="taskModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content glass-card">
+            <div class="modal-header border-bottom border-secondary">
+                <h5 class="modal-title text-white fw-bold" id="taskModalLabel">Add Task</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="taskForm">
+                    <input type="hidden" id="taskId">
+                    <div class="mb-3">
+                        <label class="form-label text-muted-light">Title</label>
+                        <input type="text" class="form-control custom-input" id="taskTitle" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted-light">Description</label>
+                        <textarea class="form-control custom-input" id="taskDescription" rows="3"></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted-light">Priority</label>
+                            <select class="form-select custom-input" id="taskPriority">
+                                <option value="Low">Low</option>
+                                <option value="Medium" selected>Medium</option>
+                                <option value="High">High</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted-light">Status</label>
+                            <select class="form-select custom-input" id="taskStatus">
+                                <option value="Pending" selected>Pending</option>
+                                <option value="In Progress">In Progress</option>
+                                <option value="Completed">Completed</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-top border-secondary">
+                <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary btn-gradient" id="saveTaskBtn" onclick="saveTask()">Save Task</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade glass-modal" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content glass-card border-danger">
+            <div class="modal-body text-center p-4">
+                <i class="fa-solid fa-triangle-exclamation text-danger fa-3x mb-3"></i>
+                <h5 class="text-white mb-3">Are you sure?</h5>
+                <p class="text-muted-light mb-4">Do you really want to delete this task? This cannot be undone.</p>
+                <input type="hidden" id="deleteTaskId">
+                <div class="d-flex gap-2 justify-content-center">
+                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" onclick="confirmDeleteTask()">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Passing JWT token to JavaScript safely -->
+<script>
+    const JWT_TOKEN = "{{ jwt_token }}";
+</script>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% endblock %}
