@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container d-flex justify-content-center align-items-center min-vh-100">
+    <div class="col-md-5">
+        <div class="card glass-card p-5 shadow-lg mt-5 mb-5">
+            <div class="text-center mb-4">
+                <i class="fa-solid fa-rocket fa-3x text-primary-gradient mb-3"></i>
+                <h2 class="fw-bold text-white">Create Account</h2>
+                <p class="text-muted-light">Join the smart task manager</p>
+            </div>
+            <form method="POST" action="{{ url_for('auth.register') }}">
+                <div class="mb-3 form-floating">
+                    <input type="text" class="form-control custom-input" id="name" name="name" placeholder="John Doe" required>
+                    <label for="name">Full Name</label>
+                </div>
+                <div class="mb-3 form-floating">
+                    <input type="email" class="form-control custom-input" id="email" name="email" placeholder="name@example.com" required>
+                    <label for="email">Email address</label>
+                </div>
+                <div class="mb-3 form-floating">
+                    <input type="password" class="form-control custom-input" id="password" name="password" placeholder="Password" required>
+                    <label for="password">Password</label>
+                </div>
+                <div class="mb-4 form-floating">
+                    <input type="password" class="form-control custom-input" id="confirm_password" name="confirm_password" placeholder="Confirm Password" required>
+                    <label for="confirm_password">Confirm Password</label>
+                </div>
+                <button type="submit" class="btn btn-primary btn-gradient w-100 py-3 mb-3 fw-bold">Register</button>
+                <div class="text-center">
+                    <p class="text-muted-light">Already have an account? <a href="{{ url_for('auth.login') }}" class="text-decoration-none fw-bold gradient-text">Login</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
